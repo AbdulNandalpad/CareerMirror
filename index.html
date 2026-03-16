@@ -1,0 +1,1342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CareerMirror — See yourself the way the market does</title>
+<meta name="description" content="Brutally honest AI analysis of your LinkedIn profile. No flattery. Just where you stand and how to stay relevant.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy:      #0A0E1A;
+    --navy2:     #111827;
+    --navy3:     #1C2537;
+    --navy4:     #263044;
+    --amber:     #F5A623;
+    --amber2:    #FFBE4D;
+    --amber3:    #FFF0CC;
+    --coral:     #FF5C5C;
+    --coral2:    #FF8080;
+    --teal:      #00D4B4;
+    --teal2:     #00F5D4;
+    --white:     #FFFFFF;
+    --offwhite:  #F8F5EE;
+    --gray1:     #E8E4DC;
+    --gray2:     #B8B4AC;
+    --gray3:     #6B6860;
+    --green:     #22C55E;
+    --red:       #EF4444;
+    --orange:    #F97316;
+    --font-display: 'Playfair Display', Georgia, serif;
+    --font-body:    'Outfit', system-ui, sans-serif;
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 18px;
+    --radius-xl: 28px;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--font-body);
+    background: var(--navy);
+    color: var(--white);
+    min-height: 100vh;
+    overflow-x: hidden;
+    cursor: default;
+  }
+
+  /* ─── NOISE TEXTURE OVERLAY ─── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.6;
+  }
+
+  /* ─── SCREENS ─── */
+  .screen { display: none; position: relative; z-index: 1; }
+  .screen.active { display: block; }
+
+  /* ─── LANDING ─── */
+  #screen-landing {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 24px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Big decorative orbs */
+  #screen-landing::after {
+    content: '';
+    position: absolute;
+    width: 600px; height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(245,166,35,0.12) 0%, transparent 70%);
+    top: -100px; right: -150px;
+    pointer-events: none;
+  }
+
+  .orb-left {
+    position: absolute;
+    width: 400px; height: 400px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0,212,180,0.08) 0%, transparent 70%);
+    bottom: -80px; left: -80px;
+    pointer-events: none;
+  }
+
+  /* Nav */
+  .nav {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 32px;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+  }
+
+  .logo-mark {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    border: 1.5px solid var(--amber);
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+  }
+
+  .logo-mark::after {
+    content: '';
+    position: absolute;
+    width: 18px; height: 1.5px;
+    background: var(--amber);
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  .logo-mark::before {
+    content: '';
+    position: absolute;
+    width: 1.5px; height: 18px;
+    background: var(--amber);
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  .logo-name {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--white);
+    letter-spacing: -0.2px;
+  }
+
+  .nav-badge {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--amber);
+    border: 1px solid rgba(245,166,35,0.3);
+    border-radius: 999px;
+    padding: 4px 12px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  /* Hero */
+  .hero {
+    text-align: center;
+    max-width: 600px;
+    animation: fadeUp 0.8s ease both;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .hero-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--amber);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 20px;
+  }
+
+  .hero-eyebrow span {
+    width: 24px; height: 1px;
+    background: var(--amber);
+    display: inline-block;
+  }
+
+  .hero-title {
+    font-family: var(--font-display);
+    font-size: clamp(36px, 6vw, 62px);
+    font-weight: 900;
+    line-height: 1.08;
+    letter-spacing: -1px;
+    margin-bottom: 20px;
+    color: var(--white);
+  }
+
+  .hero-title .accent {
+    font-style: italic;
+    color: var(--amber);
+  }
+
+  .hero-sub {
+    font-size: 17px;
+    font-weight: 300;
+    color: var(--gray2);
+    line-height: 1.7;
+    max-width: 440px;
+    margin: 0 auto 40px;
+  }
+
+  /* CTA buttons */
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--amber);
+    color: var(--navy);
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 15px 28px;
+    font-family: var(--font-body);
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.15s, background 0.15s, box-shadow 0.15s;
+    box-shadow: 0 4px 20px rgba(245,166,35,0.35);
+  }
+
+  .btn-primary:hover {
+    background: var(--amber2);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 28px rgba(245,166,35,0.45);
+  }
+
+  .btn-primary:active { transform: translateY(0) scale(0.98); }
+
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    color: var(--gray2);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: var(--radius-sm);
+    padding: 13px 24px;
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 400;
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s, background 0.15s;
+  }
+
+  .btn-secondary:hover {
+    border-color: rgba(255,255,255,0.3);
+    color: var(--white);
+    background: rgba(255,255,255,0.04);
+  }
+
+  .cta-group {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .divider-text {
+    font-size: 12px;
+    color: var(--gray3);
+  }
+
+  /* Trust strip */
+  .trust-strip {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    margin-top: 52px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .trust-item {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 12px;
+    color: var(--gray3);
+    font-weight: 300;
+  }
+
+  .trust-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--teal);
+    flex-shrink: 0;
+  }
+
+  /* Stats */
+  .stats-row {
+    display: flex;
+    gap: 2px;
+    margin-top: 48px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+
+  .stat {
+    flex: 1;
+    padding: 18px 20px;
+    text-align: center;
+    border-right: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .stat:last-child { border-right: none; }
+
+  .stat-num {
+    font-family: var(--font-display);
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--amber);
+    display: block;
+  }
+
+  .stat-label {
+    font-size: 11px;
+    color: var(--gray3);
+    font-weight: 300;
+    margin-top: 2px;
+    display: block;
+  }
+
+  /* ─── PASTE SCREEN ─── */
+  #screen-paste {
+    min-height: 100vh;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .paste-header {
+    padding: 20px 32px;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .back-btn {
+    background: none;
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: var(--radius-sm);
+    color: var(--gray2);
+    font-family: var(--font-body);
+    font-size: 13px;
+    padding: 7px 14px;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex; align-items: center; gap: 5px;
+  }
+
+  .back-btn:hover { border-color: rgba(255,255,255,0.25); color: var(--white); }
+
+  .paste-content {
+    flex: 1;
+    max-width: 680px;
+    margin: 0 auto;
+    width: 100%;
+    padding: 48px 24px;
+  }
+
+  .paste-title {
+    font-family: var(--font-display);
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    line-height: 1.2;
+  }
+
+  .paste-sub {
+    font-size: 15px;
+    color: var(--gray2);
+    font-weight: 300;
+    margin-bottom: 32px;
+    line-height: 1.6;
+  }
+
+  label.field-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--gray2);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 8px;
+  }
+
+  textarea, input[type="text"] {
+    width: 100%;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: var(--radius-md);
+    padding: 14px 16px;
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 300;
+    color: var(--white);
+    outline: none;
+    transition: border-color 0.2s, background 0.2s;
+    line-height: 1.6;
+  }
+
+  textarea {
+    height: 220px;
+    resize: vertical;
+    margin-bottom: 16px;
+  }
+
+  textarea::placeholder, input::placeholder { color: var(--gray3); }
+
+  textarea:focus, input:focus {
+    border-color: rgba(245,166,35,0.5);
+    background: rgba(255,255,255,0.06);
+  }
+
+  .field-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+
+  .field-group { display: flex; flex-direction: column; }
+
+  .analyze-btn {
+    width: 100%;
+    background: linear-gradient(135deg, var(--amber) 0%, var(--coral) 100%);
+    color: var(--white);
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    font-family: var(--font-body);
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.1s, box-shadow 0.15s;
+    box-shadow: 0 4px 24px rgba(245,166,35,0.3);
+    letter-spacing: 0.2px;
+  }
+
+  .analyze-btn:hover {
+    opacity: 0.92;
+    transform: translateY(-1px);
+    box-shadow: 0 8px 30px rgba(245,166,35,0.4);
+  }
+
+  .analyze-btn:active { transform: scale(0.99); }
+  .analyze-btn:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
+
+  .error-box {
+    background: rgba(239,68,68,0.1);
+    border: 1px solid rgba(239,68,68,0.3);
+    border-radius: var(--radius-sm);
+    color: #FCA5A5;
+    font-size: 13px;
+    padding: 12px 14px;
+    margin-bottom: 16px;
+    display: none;
+  }
+
+  .demo-link {
+    text-align: center;
+    margin-top: 16px;
+    font-size: 13px;
+    color: var(--gray3);
+  }
+
+  .demo-link button {
+    background: none;
+    border: none;
+    color: var(--amber);
+    font-family: var(--font-body);
+    font-size: 13px;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  /* ─── LOADING ─── */
+  #screen-loading {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 24px;
+    text-align: center;
+  }
+
+  .loading-ring {
+    width: 72px; height: 72px;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.08);
+    border-top-color: var(--amber);
+    border-right-color: var(--amber);
+    animation: spin 1.1s cubic-bezier(0.5,0,0.5,1) infinite;
+    margin: 0 auto 28px;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .loading-title {
+    font-family: var(--font-display);
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+
+  .loading-sub {
+    font-size: 14px;
+    color: var(--gray3);
+    margin-bottom: 36px;
+  }
+
+  .loading-steps {
+    list-style: none;
+    text-align: left;
+    max-width: 280px;
+    margin: 0 auto;
+  }
+
+  .loading-steps li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    color: var(--gray3);
+    padding: 6px 0;
+    transition: color 0.3s;
+  }
+
+  .loading-steps li.active { color: var(--white); }
+  .loading-steps li.done  { color: var(--gray2); }
+
+  .step-indicator {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(255,255,255,0.12);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    font-size: 9px;
+    transition: all 0.3s;
+  }
+
+  .loading-steps li.active .step-indicator {
+    border-color: var(--amber);
+    background: rgba(245,166,35,0.15);
+  }
+
+  .loading-steps li.done .step-indicator {
+    border-color: var(--teal);
+    background: rgba(0,212,180,0.15);
+    color: var(--teal);
+  }
+
+  /* ─── RESULTS ─── */
+  #screen-results {
+    min-height: 100vh;
+    background: var(--navy);
+  }
+
+  .results-nav {
+    padding: 16px 28px;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    background: rgba(10,14,26,0.92);
+    backdrop-filter: blur(12px);
+    z-index: 10;
+  }
+
+  .results-logo {
+    font-family: var(--font-display);
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--white);
+  }
+
+  .results-logo span { color: var(--amber); }
+
+  .results-body {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 32px 24px 80px;
+  }
+
+  /* Score hero */
+  .score-hero {
+    background: linear-gradient(135deg, var(--navy3) 0%, var(--navy4) 100%);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: var(--radius-xl);
+    padding: 28px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .score-hero::after {
+    content: '';
+    position: absolute;
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(245,166,35,0.1), transparent 70%);
+    right: -40px; top: -40px;
+    pointer-events: none;
+  }
+
+  .score-ring-wrap {
+    position: relative;
+    width: 100px; height: 100px;
+    flex-shrink: 0;
+  }
+
+  .score-ring-wrap svg {
+    width: 100%; height: 100%;
+    transform: rotate(-90deg);
+  }
+
+  .score-text-center {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .score-num {
+    font-family: var(--font-display);
+    font-size: 28px;
+    font-weight: 900;
+    color: var(--white);
+    line-height: 1;
+  }
+
+  .score-denom {
+    font-size: 11px;
+    color: var(--gray3);
+  }
+
+  .score-info { flex: 1; }
+
+  .score-verdict {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 8px;
+  }
+
+  .score-summary {
+    font-size: 13px;
+    color: var(--gray2);
+    line-height: 1.65;
+    font-weight: 300;
+  }
+
+  /* Cards */
+  .card {
+    background: var(--navy2);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: var(--radius-lg);
+    margin-bottom: 14px;
+    overflow: hidden;
+  }
+
+  .card-header {
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: background 0.15s;
+    user-select: none;
+  }
+
+  .card-header:hover { background: rgba(255,255,255,0.03); }
+
+  .card-icon {
+    width: 28px; height: 28px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px;
+    flex-shrink: 0;
+  }
+
+  .icon-red    { background: rgba(239,68,68,0.15);  color: #FCA5A5; }
+  .icon-amber  { background: rgba(245,166,35,0.15); color: var(--amber2); }
+  .icon-green  { background: rgba(34,197,94,0.15);  color: #86EFAC; }
+  .icon-teal   { background: rgba(0,212,180,0.15);  color: var(--teal2); }
+
+  .card-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--white);
+    flex: 1;
+  }
+
+  .card-chevron {
+    color: var(--gray3);
+    font-size: 11px;
+    transition: transform 0.2s;
+  }
+
+  .card-chevron.open { transform: rotate(180deg); }
+
+  .card-body {
+    padding: 0 18px 18px;
+    display: none;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    padding-top: 16px;
+  }
+
+  .card-body.open { display: block; }
+
+  .card-body p {
+    font-size: 14px;
+    color: var(--gray2);
+    line-height: 1.7;
+    font-weight: 300;
+  }
+
+  /* Risk bar */
+  .risk-bar-wrap {
+    margin: 14px 0 8px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 999px;
+    height: 7px;
+    overflow: hidden;
+  }
+
+  .risk-bar-fill {
+    height: 100%;
+    border-radius: 999px;
+    transition: width 1.2s cubic-bezier(0.22,1,0.36,1);
+  }
+
+  .fill-high   { background: linear-gradient(90deg, var(--orange), var(--red)); }
+  .fill-medium { background: linear-gradient(90deg, var(--amber), var(--orange)); }
+  .fill-low    { background: linear-gradient(90deg, var(--teal), var(--green)); }
+
+  .risk-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--gray3);
+    margin-bottom: 16px;
+  }
+
+  /* Skills */
+  .skill-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .skill-pill {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 8px;
+    padding: 8px 12px;
+  }
+
+  .skill-name { font-size: 12px; color: var(--gray2); }
+
+  .risk-tag {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+
+  .tag-high   { background: rgba(239,68,68,0.2);   color: #FCA5A5; }
+  .tag-medium { background: rgba(245,166,35,0.2);  color: var(--amber2); }
+  .tag-low    { background: rgba(34,197,94,0.2);   color: #86EFAC; }
+
+  /* Roadmap */
+  .roadmap-steps { margin-top: 4px; }
+
+  .roadmap-step {
+    display: flex;
+    gap: 14px;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+
+  .roadmap-step:last-child { border-bottom: none; }
+
+  .step-num {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--amber), var(--coral));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--white);
+    flex-shrink: 0;
+  }
+
+  .step-title { font-size: 14px; font-weight: 500; color: var(--white); margin-bottom: 3px; }
+  .step-desc  { font-size: 13px; color: var(--gray2); line-height: 1.55; font-weight: 300; }
+
+  /* Action CTAs */
+  .action-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 24px;
+  }
+
+  .action-card {
+    background: var(--navy3);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s, transform 0.15s;
+    text-align: left;
+  }
+
+  .action-card:hover {
+    border-color: rgba(245,166,35,0.3);
+    background: var(--navy4);
+    transform: translateY(-2px);
+  }
+
+  .action-card-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--white);
+    margin-bottom: 4px;
+  }
+
+  .action-card-desc {
+    font-size: 12px;
+    color: var(--gray3);
+    line-height: 1.45;
+  }
+
+  .action-arrow {
+    font-size: 16px;
+    color: var(--amber);
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  .new-scan {
+    width: 100%;
+    margin-top: 12px;
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: var(--radius-sm);
+    padding: 12px;
+    font-family: var(--font-body);
+    font-size: 14px;
+    color: var(--gray3);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .new-scan:hover {
+    border-color: rgba(255,255,255,0.25);
+    color: var(--white);
+    background: rgba(255,255,255,0.04);
+  }
+
+  /* LI button */
+  .li-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: #0A66C2;
+    color: var(--white);
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 14px 26px;
+    font-family: var(--font-body);
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+    box-shadow: 0 4px 18px rgba(10,102,194,0.35);
+  }
+
+  .li-btn:hover { background: #085196; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(10,102,194,0.45); }
+  .li-btn:active { transform: scale(0.98); }
+
+  /* Responsive */
+  @media (max-width: 520px) {
+    .field-row { grid-template-columns: 1fr; }
+    .action-grid { grid-template-columns: 1fr; }
+    .skill-grid { grid-template-columns: 1fr; }
+    .score-hero { flex-direction: column; text-align: center; }
+    .stats-row { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════ LANDING ═══════════════════ -->
+<div id="screen-landing" class="screen active">
+  <div class="orb-left"></div>
+
+  <nav class="nav">
+    <a class="logo" href="#">
+      <div class="logo-mark"></div>
+      <span class="logo-name">CareerMirror</span>
+    </a>
+    <span class="nav-badge">Beta · Free</span>
+  </nav>
+
+  <div class="hero">
+    <div class="hero-eyebrow">
+      <span></span>
+      AI Career Analysis
+      <span></span>
+    </div>
+
+    <h1 class="hero-title">
+      See yourself the way<br>
+      <span class="accent">the market does</span>
+    </h1>
+
+    <p class="hero-sub">
+      Brutally honest AI analysis of your LinkedIn profile.
+      No flattery. No sugarcoating. Just the truth — and how to stay relevant.
+    </p>
+
+    <div class="cta-group">
+      <button class="li-btn" onclick="simulateLinkedIn()">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <rect width="18" height="18" rx="3" fill="white"/>
+          <path d="M5 7.5V13M5 5.3V5.5M8.5 13V10c0-1.1.9-2 2-2s2 .9 2 2v3M8.5 8v.5" stroke="#0A66C2" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Continue with LinkedIn
+      </button>
+      <span class="divider-text">or</span>
+      <button class="btn-secondary" onclick="showScreen('screen-paste')">
+        Paste profile text
+      </button>
+    </div>
+
+    <div class="trust-strip">
+      <div class="trust-item"><div class="trust-dot"></div>AI replacement risk score</div>
+      <div class="trust-item"><div class="trust-dot"></div>Market trend alignment</div>
+      <div class="trust-item"><div class="trust-dot"></div>Brutally honest critique</div>
+      <div class="trust-item"><div class="trust-dot"></div>Career roadmap</div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat">
+        <span class="stat-num">87%</span>
+        <span class="stat-label">of users had overrated skills</span>
+      </div>
+      <div class="stat">
+        <span class="stat-num">3.2x</span>
+        <span class="stat-label">more AI-replaceable than they thought</span>
+      </div>
+      <div class="stat">
+        <span class="stat-num">< 60s</span>
+        <span class="stat-label">to full honest report</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ PASTE ═══════════════════ -->
+<div id="screen-paste" class="screen">
+  <div class="paste-header">
+    <button class="back-btn" onclick="showScreen('screen-landing')">← Back</button>
+    <div class="logo-name" style="font-family:var(--font-display);font-size:16px">CareerMirror</div>
+  </div>
+
+  <div class="paste-content">
+    <h2 class="paste-title">Paste your LinkedIn profile</h2>
+    <p class="paste-sub">
+      Copy your name, headline, experience, and skills from LinkedIn and paste below.
+      The more detail you include, the more precise the analysis.
+    </p>
+
+    <label class="field-label">Profile content</label>
+    <textarea id="profile-text" placeholder="Sarah Chen&#10;Senior Data Analyst at FinTech Corp&#10;&#10;Experience:&#10;• 4 years SQL reporting, Excel dashboards&#10;• Managing monthly PowerPoint presentations&#10;• Data cleaning and pipeline maintenance&#10;&#10;Skills: Excel, SQL, PowerPoint, data visualisation..."></textarea>
+
+    <div class="field-row">
+      <div class="field-group">
+        <label class="field-label">Target role (optional)</label>
+        <input id="target-role" type="text" placeholder="e.g. Data Scientist, Product Manager">
+      </div>
+      <div class="field-group">
+        <label class="field-label">Industry (optional)</label>
+        <input id="target-industry" type="text" placeholder="e.g. FinTech, Healthcare, SaaS">
+      </div>
+    </div>
+
+    <div class="error-box" id="error-box">Please paste your profile content before analysing.</div>
+
+    <button class="analyze-btn" onclick="startAnalysis()">
+      Analyse my profile — get honest feedback →
+    </button>
+
+    <p class="demo-link">
+      Don't have a profile ready?
+      <button onclick="loadDemo()">Load a demo profile</button>
+    </p>
+  </div>
+</div>
+
+<!-- ═══════════════════ LOADING ═══════════════════ -->
+<div id="screen-loading" class="screen">
+  <div class="loading-ring"></div>
+  <h2 class="loading-title">Holding up the mirror...</h2>
+  <p class="loading-sub">Honest analysis takes about 15 seconds</p>
+
+  <ul class="loading-steps" id="loading-steps">
+    <li id="step1"><div class="step-indicator">1</div> Reading your experience</li>
+    <li id="step2"><div class="step-indicator">2</div> Scanning 2025 market trends</li>
+    <li id="step3"><div class="step-indicator">3</div> Assessing AI replacement risk</li>
+    <li id="step4"><div class="step-indicator">4</div> Identifying skill gaps</li>
+    <li id="step5"><div class="step-indicator">5</div> Building your career roadmap</li>
+  </ul>
+</div>
+
+<!-- ═══════════════════ RESULTS ═══════════════════ -->
+<div id="screen-results" class="screen">
+  <nav class="results-nav">
+    <span class="results-logo">Career<span>Mirror</span></span>
+    <button class="btn-secondary" style="padding:8px 16px;font-size:12px" onclick="restart()">New scan</button>
+  </nav>
+
+  <div class="results-body">
+
+    <!-- Score hero -->
+    <div class="score-hero">
+      <div class="score-ring-wrap">
+        <svg viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="6"/>
+          <circle cx="50" cy="50" r="42" fill="none" stroke="url(#scoreGrad)" stroke-width="6"
+            stroke-dasharray="263.9" stroke-dashoffset="263.9"
+            stroke-linecap="round" id="score-arc"
+            style="transition: stroke-dashoffset 1.4s cubic-bezier(0.22,1,0.36,1)"/>
+          <defs>
+            <linearGradient id="scoreGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#F5A623"/>
+              <stop offset="100%" stop-color="#FF5C5C"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <div class="score-text-center">
+          <span class="score-num" id="score-num">—</span>
+          <span class="score-denom">/ 100</span>
+        </div>
+      </div>
+      <div class="score-info">
+        <div class="score-verdict" id="score-verdict">Analysing...</div>
+        <p class="score-summary" id="score-summary"></p>
+      </div>
+    </div>
+
+    <!-- Honest critique -->
+    <div class="card">
+      <div class="card-header" onclick="toggleCard('critique')">
+        <div class="card-icon icon-red">⚠</div>
+        <span class="card-title">Honest critique</span>
+        <span class="card-chevron open" id="chev-critique">▾</span>
+      </div>
+      <div class="card-body open" id="body-critique">
+        <p>Loading analysis...</p>
+      </div>
+    </div>
+
+    <!-- AI risk -->
+    <div class="card">
+      <div class="card-header" onclick="toggleCard('ai-risk')">
+        <div class="card-icon icon-amber">🤖</div>
+        <span class="card-title">AI replacement risk</span>
+        <span class="card-chevron" id="chev-ai-risk">▾</span>
+      </div>
+      <div class="card-body" id="body-ai-risk">
+        <p>Loading...</p>
+      </div>
+    </div>
+
+    <!-- Strengths -->
+    <div class="card">
+      <div class="card-header" onclick="toggleCard('strengths')">
+        <div class="card-icon icon-green">✓</div>
+        <span class="card-title">What you do well</span>
+        <span class="card-chevron" id="chev-strengths">▾</span>
+      </div>
+      <div class="card-body" id="body-strengths">
+        <p>Loading...</p>
+      </div>
+    </div>
+
+    <!-- Roadmap -->
+    <div class="card">
+      <div class="card-header" onclick="toggleCard('roadmap')">
+        <div class="card-icon icon-teal">→</div>
+        <span class="card-title">Your career roadmap</span>
+        <span class="card-chevron" id="chev-roadmap">▾</span>
+      </div>
+      <div class="card-body" id="body-roadmap">
+        <p>Loading...</p>
+      </div>
+    </div>
+
+    <!-- Action CTAs -->
+    <div class="action-grid">
+      <div class="action-card" onclick="sendToClaude('Give me a detailed 90-day action plan based on my CareerMirror results. Be specific about weekly tasks.')">
+        <span class="action-arrow">↗</span>
+        <div class="action-card-title">90-day action plan</div>
+        <div class="action-card-desc">Week-by-week steps to level up</div>
+      </div>
+      <div class="action-card" onclick="sendToClaude('Which specific courses, certifications or projects should I do first to future-proof my career based on my CareerMirror results?')">
+        <span class="action-arrow">↗</span>
+        <div class="action-card-title">Skill recommendations</div>
+        <div class="action-card-desc">Courses, certs & projects</div>
+      </div>
+      <div class="action-card" onclick="sendToClaude('Rewrite my LinkedIn headline and summary to better reflect current market trends, based on my CareerMirror analysis.')">
+        <span class="action-arrow">↗</span>
+        <div class="action-card-title">Rewrite my LinkedIn</div>
+        <div class="action-card-desc">Headline & summary upgrade</div>
+      </div>
+      <div class="action-card" onclick="sendToClaude('What salary range should I target and how can I negotiate better, based on my CareerMirror profile analysis?')">
+        <span class="action-arrow">↗</span>
+        <div class="action-card-title">Salary strategy</div>
+        <div class="action-card-desc">What you should be earning</div>
+      </div>
+    </div>
+
+    <button class="new-scan" onclick="restart()">← Scan another profile</button>
+  </div>
+</div>
+
+<script>
+  const API_ENDPOINT = '/api/analyze';
+
+  let lastProfile = '';
+  let lastTarget = '';
+
+  function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0, 0);
+  }
+
+  function simulateLinkedIn() {
+    showScreen('screen-paste');
+    document.getElementById('profile-text').value =
+      'Sarah Chen\nSenior Data Analyst at FinTech Solutions\n\nExperience:\n- 4 years: SQL queries, Excel dashboards, monthly management reporting\n- Creating PowerPoint decks and presentations for stakeholders\n- Maintaining legacy data pipelines in Excel and Access\n- Occasional Python scripting for data cleaning\n- Running weekly KPI reports manually\n\nEducation: BSc Statistics, University of Manchester, 2019\n\nSkills: Microsoft Excel, SQL, PowerPoint, data cleaning, report writing, Google Analytics, Tableau basics';
+    document.getElementById('target-role').value = 'Data Scientist';
+    document.getElementById('target-industry').value = 'FinTech';
+  }
+
+  function loadDemo() { simulateLinkedIn(); }
+
+  function startAnalysis() {
+    const profileText = document.getElementById('profile-text').value.trim();
+    const targetRole = document.getElementById('target-role').value.trim();
+    const targetIndustry = document.getElementById('target-industry').value.trim();
+    const errBox = document.getElementById('error-box');
+
+    if (!profileText || profileText.length < 40) {
+      errBox.style.display = 'block';
+      return;
+    }
+
+    errBox.style.display = 'none';
+    lastProfile = profileText;
+    lastTarget = [targetRole, targetIndustry].filter(Boolean).join(' / ');
+
+    showScreen('screen-loading');
+    animateSteps();
+    callAPI(profileText, [targetRole, targetIndustry].filter(Boolean).join(', '));
+  }
+
+  function animateSteps() {
+    const ids = ['step1','step2','step3','step4','step5'];
+    let i = 0;
+    const iv = setInterval(() => {
+      if (i > 0) {
+        const prev = document.getElementById(ids[i-1]);
+        prev.className = 'done';
+        prev.querySelector('.step-indicator').textContent = '✓';
+      }
+      if (i < ids.length) {
+        document.getElementById(ids[i]).className = 'active';
+        i++;
+      } else {
+        clearInterval(iv);
+      }
+    }, 2400);
+  }
+
+  async function callAPI(profileText, targetRole) {
+    try {
+      const resp = await fetch(API_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ profileText, targetRole })
+      });
+
+      if (!resp.ok) throw new Error('API error ' + resp.status);
+
+      const result = await resp.json();
+      if (result.error) throw new Error(result.error);
+
+      renderResults(result);
+    } catch(e) {
+      showScreen('screen-paste');
+      const errBox = document.getElementById('error-box');
+      errBox.textContent = 'Analysis failed: ' + (e.message || 'Please try again.');
+      errBox.style.display = 'block';
+    }
+  }
+
+  function renderResults(r) {
+    showScreen('screen-results');
+
+    // Score ring
+    const score = Math.min(100, Math.max(0, r.score || 0));
+    document.getElementById('score-num').textContent = score;
+    document.getElementById('score-verdict').textContent = r.verdict || 'Analysis complete';
+    document.getElementById('score-summary').textContent = r.summary || '';
+
+    setTimeout(() => {
+      const circ = 263.9;
+      const offset = circ - (score / 100) * circ;
+      document.getElementById('score-arc').style.strokeDashoffset = offset;
+    }, 150);
+
+    // Critique
+    document.getElementById('body-critique').innerHTML =
+      `<p>${(r.critique || 'No critique generated.').replace(/\n/g, '<br><br>')}</p>`;
+
+    // AI risk
+    const pct = Math.min(100, Math.max(0, r.ai_risk_score || 0));
+    const lvl = (r.ai_risk_level || 'Medium').toLowerCase();
+    const fillClass = lvl === 'high' ? 'fill-high' : lvl === 'low' ? 'fill-low' : 'fill-medium';
+
+    let skillsHtml = '';
+    if (r.skills_at_risk && r.skills_at_risk.length) {
+      skillsHtml = '<div class="skill-grid">' +
+        r.skills_at_risk.map(s => {
+          const tagClass = s.risk === 'High' ? 'tag-high' : s.risk === 'Low' ? 'tag-low' : 'tag-medium';
+          return `<div class="skill-pill"><span class="skill-name">${s.skill}</span><span class="risk-tag ${tagClass}">${s.risk}</span></div>`;
+        }).join('') + '</div>';
+    }
+
+    document.getElementById('body-ai-risk').innerHTML = `
+      <p>${r.ai_risk_explanation || ''}</p>
+      <div class="risk-bar-wrap">
+        <div class="risk-bar-fill ${fillClass}" id="risk-fill" style="width:0%"></div>
+      </div>
+      <div class="risk-meta">
+        <span>Risk level: <strong style="color:var(--white)">${r.ai_risk_level || 'Medium'}</strong></span>
+        <span>${pct}% automatable today</span>
+      </div>
+      ${skillsHtml}
+    `;
+
+    setTimeout(() => {
+      const el = document.getElementById('risk-fill');
+      if (el) el.style.width = pct + '%';
+    }, 300);
+
+    // Strengths
+    document.getElementById('body-strengths').innerHTML =
+      `<p>${(r.strengths || 'No strengths identified.').replace(/\n/g, '<br><br>')}</p>`;
+
+    // Roadmap
+    const steps = (r.roadmap || []).map(s => `
+      <div class="roadmap-step">
+        <div class="step-num">${s.step}</div>
+        <div>
+          <div class="step-title">${s.title}</div>
+          <div class="step-desc">${s.description}</div>
+        </div>
+      </div>`).join('');
+
+    document.getElementById('body-roadmap').innerHTML =
+      `<div class="roadmap-steps">${steps || '<p>No roadmap generated.</p>'}</div>`;
+  }
+
+  function toggleCard(name) {
+    const body = document.getElementById('body-' + name);
+    const chev = document.getElementById('chev-' + name);
+    const isOpen = body.classList.toggle('open');
+    chev.classList.toggle('open', isOpen);
+  }
+
+  function restart() {
+    showScreen('screen-landing');
+    document.getElementById('profile-text').value = '';
+    document.getElementById('target-role').value = '';
+    document.getElementById('target-industry').value = '';
+    document.getElementById('error-box').style.display = 'none';
+    ['step1','step2','step3','step4','step5'].forEach((id, i) => {
+      const el = document.getElementById(id);
+      el.className = '';
+      el.querySelector('.step-indicator').textContent = i + 1;
+    });
+  }
+
+  function sendToClaude(msg) {
+    if (window.sendPrompt) {
+      window.sendPrompt(msg);
+    } else {
+      alert('Open this in Claude.ai to use this feature, or copy this prompt:\n\n' + msg);
+    }
+  }
+</script>
+</body>
+</html>
